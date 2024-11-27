@@ -98,7 +98,7 @@ if __name__ == "__main__":
     aliases_by_person(person_id)
 
     # Обновление
-    update_person_name(person_id, "John Doe")
+    update_person_name(person_id, "John Dawk")
     update_alias(alias_id, "JohnD")
 
     # Находим запись по Id
