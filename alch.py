@@ -80,7 +80,7 @@ person_id = new_person.Id
 person = session.query(Persons).filter_by(Id=person_id).first()
 
 if person:
-    session.delete(new_person)
+    session.query(Persons).delete()
     session.commit()
     print("Deleted person with ID")
 
