@@ -42,7 +42,7 @@ session.commit()
 print(f"Added person with ID: {new_person.Id}")
 
 # Добавление нового алиаса
-new_alias = Aliases(Alias="Banan", PersonId=new_person.Id, Id = 10000000051)
+new_alias = Aliases(Alias="Banan", PersonId=new_person.Id, Id = 100000000000011)
 session.add(new_alias)
 session.commit()
 print(f"Added alias with ID: {new_alias.Id}")
@@ -61,5 +61,4 @@ person = session.query(Persons).filter_by(Id=person_id).first()
 if person:
     session.query(Persons).delete()
     session.commit()
-    print("Deleted person with ID")
-
+    print(f"Deleted person with ID {new_person.Id}")
