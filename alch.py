@@ -13,27 +13,6 @@ class Persons(Base):
     # Связь один ко многим с таблицей Aliases
     aliases = relationship('Aliases', back_populates='person')
 
-class Emails(Base):
-    Id = Column(Integer, primary_key=True)
-    DocNumber = Column(String)
-    MetadataSubject = Column(String)
-    SenderPersonId = Column(Integer, primary_key = True)
-    MetadataSent = Column(String)
-    MetadataDateReleased = Column(String)
-    MetadataPdfLink = Column(String)
-    MetadataCaseNumber = Column(String)
-    MetadataDocumentClass = Column(String)
-    ExtractedSubject = Column(String)
-    ExtractedTo = Column(String)
-    ExtractedFrom = Column(String)
-    ExtractedCc = Column(String)
-    ExtractedDateSent = Column(String)
-    ExtractedCaseNumber = Column(String)
-    ExtractedDocNumber = Column(String)
-    ExtractedDateReleased = Column(String)
-    ExtractedReleaseInPartOrFull = Column(String)
-    ExtractedBodyText = Column(String)
-    RawText = Column(String)
 class Aliases(Base):
     __tablename__ = 'Aliases'
     Id = Column(Integer, primary_key=True)
