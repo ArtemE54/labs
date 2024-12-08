@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from alch import setup_database, create_session, Persons, Aliases  # Подключаем модели из ORM
 
 # Инициализация базы данных
-engine = setup_database("sqlite:///C:\\Users\\Eroha\\PycharmProjects\\pythonProject\\pipon\\database.sqlite")
+engine = setup_database("sqlite:///database.sqlite")
 session = create_session(engine)
 
 # CREATE (Создание)
@@ -67,6 +67,32 @@ def update_alias(alias_id, new_alias):
         print(f"Alias with ID {alias_id} not found.")
         return None
 
+
+def search_person_by_name(name):
+    persons = session.query(Persons).filter(Persons.Name.ilike(f"%{name}%")).all()
+    if persons:
+        print(f"Found persons with name '{name}':")
+        for person in persons:
+            print(f"Person ID: {person.Id}, Name: {person.Name}")
+        return persons
+    else:
+        print(f"No persons found with name '{name}'.")
+        return None
+
+def search_alias_by_alias(alias):
+    aliases = session.query(Aliases).filter(Aliases.Alias.ilike(f"%{alias}%")).all()
+    if aliases:
+        print(f"Found aliases with alias '{alias}':")
+        for alias in aliases:
+            print(f"Alias ID: {alias.Id}, Alias: {alias.Alias}, Person ID: {alias.PersonId}")
+        return aliases
+    else:
+        print(f"No aliases found with alias '{alias}'.")
+        return None
+
+
+
+
 # DELETE (Удаление)
 def delete_person(person_id):
     person = session.query(Persons).filter_by(Id=person_id).first()
@@ -89,8 +115,8 @@ def delete_alias(alias_id):
 # Примеры использования
 if __name__ == "__main__":
     # Создание
-    person_id = add_person("John Doe")
-    alias_id = add_alias_id("JD", person_id)
+    person_id = add_person("Jackie chan")
+    alias_id = add_alias_id("1000000000018", person_id)
 
     # Чтение
     get_person_by_id(person_id)
@@ -98,10 +124,13 @@ if __name__ == "__main__":
     aliases_by_person(person_id)
 
     # Обновление
-    update_person_name(person_id, "John Dawk")
-    update_alias(alias_id, "JohnD")
+    update_person_name(person_id, "Petr Pet")
+    update_alias(alias_id, "Pet")
 
-    # Находим запись по Id
+    # Поиск
+    search_person_by_name("Barack Obama")
+    search_alias_by_alias("")
+
     alias = session.query(Aliases).filter_by(Id=alias_id).first()
     if alias:
      # Удаляем запись
