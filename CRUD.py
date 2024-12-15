@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from alch import setup_database, create_session, Persons, Aliases  # Подключаем модели из ORM
+from alch import setup_database, create_session, Persons, Aliases, Emails  # Подключаем модели из ORM
 
 # Инициализация базы данных
 engine = setup_database("sqlite:///database.sqlite")
@@ -14,12 +14,23 @@ def add_person(name):
     print(f"Person '{name}' added with ID: {new_person.Id}")
     return new_person.Id
 
-def add_alias_id(id, person_id):
-    new_alias_id = Aliases(Id=id, PersonId=person_id)
-    session.add(new_alias_id)
+def add_alias(alias, person_id):
+    new_alias = Aliases(Alias=alias, PersonId=person_id)  # Убираем явное указание Id
+    session.add(new_alias)
     session.commit()
-    print(f"Alias '{id}' added with ID: {new_alias_id.Id}")
-    return new_alias_id.Id
+    print(f"Alias '{alias}' added for Person ID: {person_id}")
+    return new_alias.Id
+
+def add_email(sender_person_id, subject, body):
+    new_email = Emails(
+        SenderPersonId=sender_person_id,
+        MetadataSubject=subject,
+        ExtractedBodyText=body
+    )
+    session.add(new_email)
+    session.commit()
+    print(f"Email added for Person ID: {sender_person_id}")
+    return new_email.Id
 
 # READ (Чтение)
 def get_person_by_id(person_id):
@@ -44,6 +55,13 @@ def aliases_by_person(person_id):
         print(f"- {alias.Alias}")
     return aliases
 
+def emails_by_person(person_id):
+    emails = session.query(Emails).filter_by(SenderPersonId=person_id).all()
+    print(f"Emails for Person ID {person_id}:")
+    for email in emails:
+        print(f"- Subject: {email.MetadataSubject}, Body: {email.ExtractedBodyText}")
+    return emails
+
 # UPDATE (Обновление)
 def update_person_name(person_id, new_name):
     person = session.query(Persons).filter_by(Id=person_id).first()
@@ -67,7 +85,19 @@ def update_alias(alias_id, new_alias):
         print(f"Alias with ID {alias_id} not found.")
         return None
 
+def update_email(email_id, new_subject, new_body):
+    email = session.query(Emails).filter_by(Id=email_id).first()
+    if email:
+        email.MetadataSubject = new_subject
+        email.ExtractedBodyText = new_body
+        session.commit()
+        print(f"Email ID {email_id} updated.")
+        return email
+    else:
+        print(f"Email with ID {email_id} not found.")
+        return None
 
+# SEARCH (Поиск)
 def search_person_by_name(name):
     persons = session.query(Persons).filter(Persons.Name.ilike(f"%{name}%")).all()
     if persons:
@@ -90,8 +120,16 @@ def search_alias_by_alias(alias):
         print(f"No aliases found with alias '{alias}'.")
         return None
 
-
-
+def search_email_by_subject(subject):
+    emails = session.query(Emails).filter(Emails.MetadataSubject.ilike(f"%{subject}%")).all()
+    if emails:
+        print(f"Found emails with subject '{subject}':")
+        for email in emails:
+            print(f"Email ID: {email.Id}, Subject: {email.MetadataSubject}, Body: {email.ExtractedBodyText}")
+        return emails
+    else:
+        print(f"No emails found with subject '{subject}'.")
+        return None
 
 # DELETE (Удаление)
 def delete_person(person_id):
@@ -112,28 +150,44 @@ def delete_alias(alias_id):
     else:
         print(f"Alias with ID {alias_id} not found.")
 
+def delete_email(email_id):
+    email = session.query(Emails).filter_by(Id=email_id).first()
+    if email:
+        session.delete(email)
+        session.commit()
+        print(f"Email ID {email_id} deleted.")
+    else:
+        print(f"Email with ID {email_id} not found.")
+
 # Примеры использования
 if __name__ == "__main__":
     # Создание
-    person_id = add_person("Jackie chan")
-    alias_id = add_alias_id("1000000000018", person_id)
+    person_id = add_person("Jackie Chan")
+    alias_id = add_alias("Jackie", person_id)
+    email_id = add_email(person_id, "Hello", "This is a test email.")
 
     # Чтение
     get_person_by_id(person_id)
     get_all_persons()
     aliases_by_person(person_id)
+    emails_by_person(person_id)
 
     # Обновление
-    update_person_name(person_id, "Petr Pet")
-    update_alias(alias_id, "Pet")
+    update_person_name(person_id, "Jackie Chan Updated")
+    update_alias(alias_id, "Jackie Updated")
+    update_email(email_id, "Updated Subject", "Updated body.")
 
     # Поиск
-    search_person_by_name("Barack Obama")
-    search_alias_by_alias("")
+    search_person_by_name("Jackie")
+    search_alias_by_alias("Jackie")
+    search_email_by_subject("Hello")
 
-    alias = session.query(Aliases).filter_by(Id=alias_id).first()
-    if alias:
-     # Удаляем запись
-        session.delete(alias)
-        session.commit()
-        print(f"Alias with ID {alias_id} deleted.")
+    # Удаление
+    delete_email(email_id)
+    delete_alias(alias_id)
+    delete_person(person_id)
+
+
+
+
+
