@@ -43,7 +43,7 @@ def get_person_by_id(person_id):
         return None
 
 def get_all_persons():
-    persons = session.query(Persons).all()
+    persons = session.query(Persons).limit(50).all()
     for person in persons:
         print(f"Person ID: {person.Id}, Name: {person.Name}")
     return persons
