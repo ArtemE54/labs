@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, create_engine, Text
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-# Base class for all models
+# Базовый класс для всех моделей
 Base = declarative_base()
 
 class Persons(Base):
@@ -10,17 +10,17 @@ class Persons(Base):
     Id = Column(Integer, primary_key=True)
     Name = Column(String)
 
-    # One-to-many relationship with Aliases and Emails tables
+    # Связь один ко многим таблиц Алиас и Емаилс
     aliases = relationship('Aliases', back_populates='person', cascade="all, delete-orphan")
     emails = relationship('Emails', back_populates='sender', cascade="all, delete-orphan")
 
 class Aliases(Base):
     __tablename__ = 'Aliases'
-    Id = Column(Integer, primary_key=True, autoincrement=True)  # Ensure this is the only primary key
+    Id = Column(Integer, primary_key=True, autoincrement=True)
     Alias = Column(String)
     PersonId = Column(Integer, ForeignKey('Persons.Id'))
 
-    # Relationship with Persons table
+    # Связь с таблицей персоны
     person = relationship('Persons', back_populates='aliases')
 
 class Emails(Base):
@@ -47,15 +47,15 @@ class Emails(Base):
     ExtractedReleaseInPartOrFull = Column(String)
     ExtractedBodyText = Column(Text)
 
-    # Relationship with Persons table
+    # Связь с таблицей персоны
     sender = relationship('Persons', back_populates='emails')
 
 def setup_database(database_path="sqlite:///database.sqlite"):
     engine = create_engine(database_path)
-    Base.metadata.create_all(engine)  # Create tables in the database
+    Base.metadata.create_all(engine)
     return engine
 
-# Create a session
+#Сощдание сессии
 def create_session(engine):
     Session = sessionmaker(bind=engine)
     return Session()
@@ -63,13 +63,13 @@ def create_session(engine):
 engine = setup_database("sqlite:///database.sqlite")
 session = create_session(engine)
 
-# Adding a new person
+# Добавление персоны
 new_person = Persons(Name="Josh Sque")
 session.add(new_person)
 session.commit()
 print(f"Added person with ID: {new_person.Id}")
 
-# Adding a new email
+# Добавление емаила
 new_email = Emails(
     DocNumber="12345",
     MetadataSubject="Test Subject",
@@ -97,7 +97,7 @@ session.add(new_email)
 session.commit()
 print(f"Added email with ID: {new_email.Id}")
 
-# Retrieving aliases and emails for the person
+# Получение алиаса и емаила для персоны
 person_id = new_person.Id
 person = session.query(Persons).filter_by(Id=person_id).first()
 
@@ -105,8 +105,8 @@ if person:
     print(f"Aliases for {person.Name}: {[alias.Alias for alias in person.aliases]}")
     print(f"Emails sent by {person.Name}: {[email.MetadataSubject for email in person.emails]}")
 
-# Deleting the person
+# Удаление персоны
 if person:
-    session.delete(person)  # This will also delete related aliases and emails due to cascade option
+    session.delete(person)
     session.commit()
     print(f"Deleted person with ID {new_person.Id}")
