@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func, desc
 from sqlalchemy.orm import sessionmaker
 from alch import setup_database, create_session, Persons, Aliases, Emails  # Подключаем модели из ORM
 
@@ -61,6 +61,23 @@ def emails_by_person(person_id):
     for email in emails:
         print(f"- Subject: {email.MetadataSubject}, Body: {email.ExtractedBodyText}")
     return emails
+
+def most_frequent_email_recipient():
+    result = session.query(
+        Emails.SenderPersonId,
+        func.count(Emails.Id).label('email_count')
+    ).group_by(Emails.SenderPersonId).order_by(desc('email_count')).first()
+
+    if result:
+        person_id, email_count = result
+        person = session.query(Persons).filter_by(Id=person_id).first()
+        if person:
+            print(f"Most frequent email recipient: {person.Name} (ID: {person.Id}) with {email_count} emails sent.")
+            return person, email_count
+    else:
+        print("No emails found.")
+        return None
+
 
 # UPDATE (Обновление)
 def update_person_name(person_id, new_name):
@@ -164,18 +181,19 @@ if __name__ == "__main__":
     # Создание
     person_id = add_person("Jackie Chan")
     alias_id = add_alias("Jackie", person_id)
-    email_id = add_email(person_id, "Hello", "This is a test email.")
+    email_id = add_email(person_id, "Hello", "My names is a")
 
     # Чтение
     get_person_by_id(person_id)
     get_all_persons()
     aliases_by_person(person_id)
     emails_by_person(person_id)
+    most_frequent_email_recipient()
 
     # Обновление
-    update_person_name(person_id, "Jackie Chan Updated")
-    update_alias(alias_id, "Jackie Updated")
-    update_email(email_id, "Updated Subject", "Updated body.")
+    update_person_name(person_id, "Jackie Sui")
+    update_alias(alias_id, "JackieS")
+    update_email(email_id, "aBOBA", "Aboba")
 
     # Поиск
     search_person_by_name("Jackie")
