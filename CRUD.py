@@ -115,6 +115,28 @@ def update_email(email_id, new_subject, new_body):
         return None
 
 # SEARCH (Поиск)
+def search_person_by_id(person_id):
+    person = session.query(Persons).filter_by(Id=person_id).first()
+    return person
+
+def get_emails_by_person_id(person_id):
+    emails = session.query(Emails).filter_by(SenderPersonId=person_id).all()
+    return emails
+
+#самый частый получатель писем
+def most_frequent_email_recipient():
+    result = session.query(
+        Emails.SenderPersonId,
+        func.count(Emails.Id).label('email_count')
+    ).group_by(Emails.SenderPersonId).order_by(desc('email_count')).first()
+
+    if result:
+        person_id, email_count = result
+        person = session.query(Persons).filter_by(Id=person_id).first()
+        return person, email_count
+    return None
+
+#поиск персоны по имени
 def search_person_by_name(name):
     persons = session.query(Persons).filter(Persons.Name.ilike(f"%{name}%")).all()
     if persons:
@@ -126,17 +148,7 @@ def search_person_by_name(name):
         print(f"No persons found with name '{name}'.")
         return None
 
-def search_alias_by_alias(alias):
-    aliases = session.query(Aliases).filter(Aliases.Alias.ilike(f"%{alias}%")).all()
-    if aliases:
-        print(f"Found aliases with alias '{alias}':")
-        for alias in aliases:
-            print(f"Alias ID: {alias.Id}, Alias: {alias.Alias}, Person ID: {alias.PersonId}")
-        return aliases
-    else:
-        print(f"No aliases found with alias '{alias}'.")
-        return None
-
+ #поиск письма по содержанию
 def search_email_by_subject(subject):
     emails = session.query(Emails).filter(Emails.MetadataSubject.ilike(f"%{subject}%")).all()
     if emails:
@@ -197,15 +209,9 @@ if __name__ == "__main__":
 
     # Поиск
     search_person_by_name("Jackie")
-    search_alias_by_alias("Jackie")
     search_email_by_subject("Hello")
 
     # Удаление
     delete_email(email_id)
     delete_alias(alias_id)
     delete_person(person_id)
-
-
-
-
-
